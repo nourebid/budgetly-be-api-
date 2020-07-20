@@ -1,8 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const app = express();
+
 app.use(bodyParser.json());
+app.use(cors());
 
 const database = {
     users: [
@@ -91,6 +94,7 @@ app.put('/budget', (req, res) => {
             user.balance = balance;
             user.budget = budget;
             user.expenses = expenses;
+            user.actionDate = new Date()
             return res.json(user);
         }
     })
@@ -102,17 +106,3 @@ app.put('/budget', (req, res) => {
 app.listen(3000, ()=> {
     console.log('app is running :)')
 })
-
-/*
-
-/res --> Home route is working
-
-/signin --> POST = Sucess or Fail
-
-/register --> POST = user
-
-/profile/:userId --> GET = user
-
-/budget/:userId --> PUT = user(new data)
-
-*/
