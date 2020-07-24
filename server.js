@@ -72,6 +72,7 @@ app.post('/signin', (req, res) => {
 
 app.post('/register', (req, res) => {
     const { firstName, lastName, email, password } = req.body;
+    //new code to connect database
         db('users')
             .returning('*')
             .insert({
@@ -101,7 +102,6 @@ app.post('/register', (req, res) => {
 
 app.get('/profile/:id', (req, res) => {
     const {id} = req.params;
-    // let found = false;
         db.select('*').from('users').where({
             id: id
         })
@@ -113,6 +113,8 @@ app.get('/profile/:id', (req, res) => {
             }
             
         })
+    //old code
+    // let found = false;
     // database.users.forEach(user => {
     //     if (user.id === id) {
     //         found = true;
