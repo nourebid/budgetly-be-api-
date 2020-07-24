@@ -1,5 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 const cors = require('cors');
 const knex = require('knex');
 
@@ -12,6 +14,8 @@ const db = knex({
         database: 'budgetly'
     }
 });
+
+
 
 //test databse connection
 // db.select('*').from('users').then(data => {
@@ -77,20 +81,50 @@ app.post('/signin', (req, res) => {
 
 app.post('/register', (req, res) => {
     const { firstName, lastName, email, password } = req.body;
-    //new code to connect database
-        db('users')
-            .returning('*')
-            .insert({
-                firstname: firstName,
-                lastname: lastName,
-                email: email,
-                lastaction: new Date(),
-                joined: new Date()
+    //new code to connect database and push in PGSQL database with bcrypt and trx
+    const hash = bcrypt.hashSync(password, saltRounds);
+    db.transaction(trx => {
+        trx.insert({
+            hash: hash,
+            email: email
+        })
+        .into('login')
+        .returning('email')
+        .then(loginEmail => {
+            return trx('users')
+                .returning('*')
+                .insert({
+                    firstname: firstName,
+                    lastname: lastName,
+                    email: loginEmail[0],
+                    lastaction: new Date(),
+                    joined: new Date()
+                })
+                .then(user => {
+                    res.json(user[0])
             })
-            .then(user => {
-                res.json(user[0])
-            })
-            .catch(err => res.status(400).json('Unable to register please check your entered data'))
+            .then(trx.commit)
+            .catch(trx.rollback)
+        })
+        .catch(err => res.status(400).json('Unable to register please check your entered data'))
+    })
+    
+        //second code to add in PGSQL database 
+        // return db('users')
+        //     .returning('*')
+        //     .insert({
+        //         firstname: firstName,
+        //         lastname: lastName,
+        //         email: email,
+        //         lastaction: new Date(),
+        //         joined: new Date()
+        //     })
+        //     .then(user => {
+        //         res.json(user[0])
+        //     })
+        //     .catch(err => res.status(400).json('Unable to register please check your entered data'))
+    
+    //Old Code to push in the hard coded database
     // database.users.push({
     //     id: '3',
     //     firstName: firstName,
@@ -145,6 +179,9 @@ app.put('/budget', (req, res) => {
             res.json(user[0])
         })
         .catch(err => res.status(400).json('Can\'t update user profile with the new data'))
+
+    // TO DO: creat button to store in frontEnd, and Create another to update the summary from database
+
     //old code
     // let found = false;
     // database.users.forEach(user => {
