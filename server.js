@@ -45,4 +45,4 @@ app.get('/profile/:id', (req, res) => { profile.handleProfile(req, res, db) });
 app.put('/data', (req, res) => { data.handleBudget(req, res, db) });
 
 //Monitor app
-app.listen(3000, ()=> { console.log('app is running :)') })
+app.listen(process.env.PORT || 3000, ()=> { console.log('app is running :)') })
