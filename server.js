@@ -23,51 +23,56 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const database = {
-    users: [
-        {   
-            id: '1',
-            firstName: 'Nour',
-            lastName: 'Ebid',
-            email: 'nour@gmail.com',
-            password: '123456',
-            budget: 0,
-            expenses: 0,
-            balance: 0,
-            joined: new Date(),
-            actionDate: new Date()
-        }, {
-            id: '2',
-            firstName: 'Sherihan',
-            lastName: 'Samir',
-            email: 'shery@gmail.com',
-            password: '123456',
-            budget: 0,
-            expenses: 0,
-            balance: 0,
-            joined: new Date(),
-            actionDate: new Date()
-        }
-    ]
-    
-}
+//hard coded database
+// const database = {
+//     users: [
+//         {   
+//             id: '1',
+//             firstName: 'Nour',
+//             lastName: 'Ebid',
+//             email: 'nour@gmail.com',
+//             password: '123456',
+//             budget: 0,
+//             expenses: 0,
+//             balance: 0,
+//             joined: new Date(),
+//             actionDate: new Date()
+//         }, {
+//             id: '2',
+//             firstName: 'Sherihan',
+//             lastName: 'Samir',
+//             email: 'shery@gmail.com',
+//             password: '123456',
+//             budget: 0,
+//             expenses: 0,
+//             balance: 0,
+//             joined: new Date(),
+//             actionDate: new Date()
+//         }
+//     ]
+// }
 
 //home route
-// app.get('/', (req, res) => {
-//     res.send('Home route is working');
-// })
 app.get('/', (req, res) => {
-    res.json(database.users);
+    res.send('Home route is working');
 })
+
+//home route getting hardcoded database
+// app.get('/', (req, res) => {
+//     res.json(database.users);
+// })
 
 
 app.post('/signin', (req, res) => {
-    if (req.body.email === database.users[0].email && 
-        req.body.password === database.users[0].password) {
-            res.json('Success')
-    } else {
-        res.status(400).json('error logging in')
-    }
+
+
+    //old code
+    // if (req.body.email === database.users[0].email && 
+    //     req.body.password === database.users[0].password) {
+    //         res.json('Success')
+    // } else {
+    //     res.status(400).json('error logging in')
+    // }
 })
 
 app.post('/register', (req, res) => {
@@ -128,20 +133,33 @@ app.get('/profile/:id', (req, res) => {
 
 app.put('/budget', (req, res) => {
     const {id, balance, budget, expenses} = req.body;
-    let found = false;
-    database.users.forEach(user => {
-        if (user.id === id) {
-            found = true;
-            user.balance = balance;
-            user.budget = budget;
-            user.expenses = expenses;
-            user.actionDate = new Date()
-            return res.json(user);
-        }
-    })
-    if (!found) {
-        res.status(400).json('user not found')
-    }
+    db('users').where('id', '=', id)
+        .update({
+            balance: balance,
+            budget: budget,
+            expenses: expenses,
+            lastaction: new Date()
+        })
+        .returning('*')
+        .then(user => {
+            res.json(user[0])
+        })
+        .catch(err => res.status(400).json('Can\'t update user profile with the new data'))
+    //old code
+    // let found = false;
+    // database.users.forEach(user => {
+    //     if (user.id === id) {
+    //         found = true;
+    //         user.balance = balance;
+    //         user.budget = budget;
+    //         user.expenses = expenses;
+    //         user.actionDate = new Date()
+    //         return res.json(user);
+    //     }
+    // })
+    // if (!found) {
+    //     res.status(400).json('user not found')
+    // }
 })
 
 app.listen(3000, ()=> {
