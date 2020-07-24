@@ -29,7 +29,7 @@ app.use(cors());
 
 //home endpoint
 app.get('/', (req, res) => {
-    res.send('Home route is working');
+    res.json('Home route is working');
 })
 
 //signin endpoint
